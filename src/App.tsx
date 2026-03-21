@@ -168,10 +168,24 @@ export default function App() {
   };
 
   const handleReset = async () => {
-    // In a real app, you might not want to let users delete all their contacts at once,
-    // or you'd need a batch delete. For now, we'll just close the modal.
-    alert("La réinitialisation complète n'est pas disponible dans cette version.");
-    setIsResetModalOpen(false);
+    if (!user) return;
+    
+    try {
+      // Fetch all contacts for this user to ensure we delete everything, not just filtered ones
+      const { getDocs } = await import('firebase/firestore');
+      const q = query(collection(db, 'contacts'), where('userId', '==', user.uid));
+      const snapshot = await getDocs(q);
+      
+      const deletePromises = snapshot.docs.map(docSnapshot => 
+        deleteDoc(doc(db, 'contacts', docSnapshot.id))
+      );
+      
+      await Promise.all(deletePromises);
+      setIsResetModalOpen(false);
+    } catch (error) {
+      console.error('Failed to reset database:', error);
+      alert('Erreur lors de la réinitialisation.');
+    }
   };
 
   if (!isAuthReady) {
