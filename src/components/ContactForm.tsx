@@ -5,11 +5,12 @@ import { X, Plus, Trash2 } from 'lucide-react';
 
 interface ContactFormProps {
   contact?: Contact | null;
+  isViewOnly?: boolean;
   onSave: (data: Contact, addAnother: boolean) => void;
   onClose: () => void;
 }
 
-export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
+export function ContactForm({ contact, isViewOnly, onSave, onClose }: ContactFormProps) {
   const today = new Date().toISOString().split('T')[0];
   
   const { register, control, handleSubmit, reset, formState: { errors }, setFocus, setValue, watch, getValues, trigger } = useForm<Contact>({
@@ -36,6 +37,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
   });
 
   const toDoValue = watch('toDo');
+  const sourceValue = watch('source');
 
   useEffect(() => {
     if (!['A relancer', 'A rencontrer', 'A finaliser'].includes(toDoValue)) {
@@ -82,7 +84,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
         <div className="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center z-10">
           <h2 className="text-xl font-semibold text-slate-800">
-            {contact?.id ? 'Modifier le contact' : 'Nouveau contact'}
+            {contact?.id ? (isViewOnly ? 'Consulter le contact' : 'Modifier le contact') : 'Nouveau contact'}
           </h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
@@ -97,18 +99,19 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
               
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Date du contact *</label>
-                <input type="date" {...register('date', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow" />
+                <input type="date" disabled={isViewOnly} {...register('date', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nom de famille *</label>
-                <input type="text" {...register('lastName', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow" placeholder="Ex: Dupont" />
+                <input type="text" disabled={isViewOnly} {...register('lastName', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Ex: Dupont" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone Père *</label>
                 <input 
                   type="tel" 
+                  disabled={isViewOnly}
                   {...register('fatherPhone', { 
                     validate: (value) => {
                       const mother = getValues('motherPhone');
@@ -118,7 +121,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
                     },
                     onChange: (e) => handlePhoneChange(e, 'fatherPhone')
                   })} 
-                  className={`w-full px-3 py-2 border ${errors.fatherPhone ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow`} 
+                  className={`w-full px-3 py-2 border ${errors.fatherPhone ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500`} 
                   placeholder="Ex: 21 214 214" 
                 />
                 {errors.fatherPhone && <span className="text-xs text-red-500 mt-1">{errors.fatherPhone.message as string}</span>}
@@ -128,6 +131,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-1">Téléphone Mère *</label>
                 <input 
                   type="tel" 
+                  disabled={isViewOnly}
                   {...register('motherPhone', { 
                     validate: (value) => {
                       const father = getValues('fatherPhone');
@@ -137,7 +141,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
                     },
                     onChange: (e) => handlePhoneChange(e, 'motherPhone')
                   })} 
-                  className={`w-full px-3 py-2 border ${errors.motherPhone ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow`} 
+                  className={`w-full px-3 py-2 border ${errors.motherPhone ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500`} 
                   placeholder="Ex: 55 555 555" 
                 />
                 {errors.motherPhone && <span className="text-xs text-red-500 mt-1">{errors.motherPhone.message as string}</span>}
@@ -148,19 +152,21 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
             <div className="space-y-4 md:col-span-1">
               <div className="flex justify-between items-center border-b pb-2">
                 <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">Enfants</h3>
-                <button
-                  type="button"
-                  onClick={() => append({ firstName: '', birthDate: '', requestedLevel: '___' })}
-                  className="text-xs flex items-center bg-[#2C337B] text-white hover:bg-[#1e2354] font-medium px-3 py-1.5 rounded-md transition-colors shadow-sm"
-                >
-                  <Plus className="w-3 h-3 mr-1" /> Ajouter
-                </button>
+                {!isViewOnly && (
+                  <button
+                    type="button"
+                    onClick={() => append({ firstName: '', birthDate: '', requestedLevel: '___' })}
+                    className="text-xs flex items-center bg-[#2C337B] text-white hover:bg-[#1e2354] font-medium px-3 py-1.5 rounded-md transition-colors shadow-sm"
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> Ajouter
+                  </button>
+                )}
               </div>
               
               <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 relative">
-                    {fields.length > 1 && (
+                    {fields.length > 1 && !isViewOnly && (
                       <button
                         type="button"
                         onClick={() => remove(index)}
@@ -173,17 +179,17 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Prénom de l'enfant *</label>
-                        <input type="text" {...register(`children.${index}.firstName` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow" placeholder="Ex: Léo" />
+                        <input type="text" disabled={isViewOnly} {...register(`children.${index}.firstName` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Ex: Léo" />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Date de naissance *</label>
-                        <input type="date" {...register(`children.${index}.birthDate` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow" />
+                        <input type="date" disabled={isViewOnly} {...register(`children.${index}.birthDate` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Niveau demandé *</label>
-                        <select {...register(`children.${index}.requestedLevel` as const)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white">
+                        <select disabled={isViewOnly} {...register(`children.${index}.requestedLevel` as const)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white disabled:bg-slate-50 disabled:text-slate-500">
                           {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                         </select>
                       </div>
@@ -199,22 +205,29 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
-                  <select {...register('source')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Source *</label>
+                  <select disabled={isViewOnly} {...register('source', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.source ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm disabled:bg-slate-50 disabled:text-slate-500`}>
                     {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Echange</label>
-                  <select {...register('channel')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm">
+                  <select disabled={isViewOnly} {...register('channel')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm disabled:bg-slate-50 disabled:text-slate-500">
                     {CHANNELS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
 
+              {sourceValue === 'Parrainage' && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Par</label>
+                  <input type="text" disabled={isViewOnly} {...register('sponsorName')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Nom de la famille qui parraine" />
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Niveau d'intérêt</label>
-                <select {...register('interestLevel')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white">
+                <select disabled={isViewOnly} {...register('interestLevel')} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white disabled:bg-slate-50 disabled:text-slate-500">
                   {INTEREST_LEVELS.map(i => <option key={i} value={i}>{i}</option>)}
                 </select>
               </div>
@@ -222,14 +235,14 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">A faire *</label>
-                  <select {...register('toDo', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.toDo ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm`}>
+                  <select disabled={isViewOnly} {...register('toDo', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.toDo ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm disabled:bg-slate-50 disabled:text-slate-500`}>
                     {TO_DOS.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                   {errors.toDo && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Statut *</label>
-                  <select {...register('status', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.status ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm font-medium`}>
+                  <select disabled={isViewOnly} {...register('status', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.status ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm font-medium disabled:bg-slate-50 disabled:text-slate-500`}>
                     {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                   {errors.status && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
@@ -239,7 +252,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
               {['A relancer', 'A rencontrer', 'A finaliser'].includes(toDoValue) && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Date et heure *</label>
-                  <input type="datetime-local" {...register('appointmentDate', { required: true })} className={`w-full px-3 py-2 border ${errors.appointmentDate ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow`} />
+                  <input type="datetime-local" disabled={isViewOnly} {...register('appointmentDate', { required: true })} className={`w-full px-3 py-2 border ${errors.appointmentDate ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500`} />
                   {errors.appointmentDate && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
                 </div>
               )}
@@ -249,22 +262,24 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Notes internes (optionnel)</label>
-              <textarea {...register('internalNotes')} rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow resize-none" placeholder="Informations pour l'équipe..." />
+              <textarea disabled={isViewOnly} {...register('internalNotes')} rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow resize-none disabled:bg-slate-50 disabled:text-slate-500" placeholder="Informations pour l'équipe..." />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Points sensibles / remarques (optionnel)</label>
-              <textarea {...register('sensitivePoints')} rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E9454C] focus:border-[#E9454C] outline-none transition-shadow resize-none" placeholder="Frais de scolarité, distance, etc..." />
+              <textarea disabled={isViewOnly} {...register('sensitivePoints')} rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#E9454C] focus:border-[#E9454C] outline-none transition-shadow resize-none disabled:bg-slate-50 disabled:text-slate-500" placeholder="Frais de scolarité, distance, etc..." />
             </div>
           </div>
         </form>
 
         <div className="sticky bottom-0 bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end space-x-3 rounded-b-2xl">
           <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg transition-colors">
-            Annuler
+            {isViewOnly ? 'Fermer' : 'Annuler'}
           </button>
-          <button type="button" onClick={handleSubmit((d) => onSubmit(d, false))} className="px-6 py-2 bg-[#2C337B] text-white font-medium hover:bg-[#1e2354] rounded-lg transition-colors shadow-sm">
-            {contact?.id ? 'Mettre à jour' : 'Enregistrer'}
-          </button>
+          {!isViewOnly && (
+            <button type="button" onClick={handleSubmit((d) => onSubmit(d, false))} className="px-6 py-2 bg-[#2C337B] text-white font-medium hover:bg-[#1e2354] rounded-lg transition-colors shadow-sm">
+              {contact?.id ? 'Mettre à jour' : 'Enregistrer'}
+            </button>
+          )}
         </div>
       </div>
     </div>

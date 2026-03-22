@@ -17,6 +17,7 @@ export interface Contact {
   toDo: string;
   appointmentDate: string | null;
   status: string;
+  sponsorName?: string;
   internalNotes?: string;
   sensitivePoints?: string;
   createdAt?: string;
@@ -32,7 +33,8 @@ export const SOURCES = [
   'Parrainage',
   'Site web',
   'Affichage',
-  'JPO'
+  'JPO',
+  'Bouche à oreille'
 ];
 
 export const CHANNELS = [

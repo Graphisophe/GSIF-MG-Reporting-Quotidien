@@ -12,6 +12,7 @@ export default function App() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [isViewOnly, setIsViewOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   // Filters
@@ -119,7 +120,7 @@ export default function App() {
             Générer PDF
           </button>
           <button
-            onClick={() => { setEditingContact(null); setIsFormOpen(true); }}
+            onClick={() => { setEditingContact(null); setIsViewOnly(false); setIsFormOpen(true); }}
             className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-[#E9454C] text-white rounded-lg hover:bg-[#d13d44] transition-colors shadow-sm font-medium"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -182,7 +183,8 @@ export default function App() {
       ) : (
         <ContactTable
           contacts={contacts}
-          onEdit={(c) => { setEditingContact(c); setIsFormOpen(true); }}
+          onEdit={(c) => { setEditingContact(c); setIsViewOnly(false); setIsFormOpen(true); }}
+          onView={(c) => { setEditingContact(c); setIsViewOnly(true); setIsFormOpen(true); }}
           onDelete={handleDeleteContact}
         />
       )}
@@ -190,8 +192,9 @@ export default function App() {
       {isFormOpen && (
         <ContactForm
           contact={editingContact}
+          isViewOnly={isViewOnly}
           onSave={handleSaveContact}
-          onClose={() => { setIsFormOpen(false); setEditingContact(null); }}
+          onClose={() => { setIsFormOpen(false); setEditingContact(null); setIsViewOnly(false); }}
         />
       )}
 

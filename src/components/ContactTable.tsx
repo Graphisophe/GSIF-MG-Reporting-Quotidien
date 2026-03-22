@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { Contact } from '../types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import { Edit2, Trash2, AlertTriangle, Eye } from 'lucide-react';
 
 interface ContactTableProps {
   contacts: Contact[];
   onEdit: (contact: Contact) => void;
+  onView: (contact: Contact) => void;
   onDelete: (id: string) => void;
 }
 
-export function ContactTable({ contacts, onEdit, onDelete }: ContactTableProps) {
+export function ContactTable({ contacts, onEdit, onView, onDelete }: ContactTableProps) {
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
 
   if (contacts.length === 0) {
@@ -96,14 +97,23 @@ export function ContactTable({ contacts, onEdit, onDelete }: ContactTableProps) 
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
-                      <button 
-                        onClick={() => onEdit(contact)} 
-                        disabled={isConfirmed}
-                        className={`flex items-center p-1.5 rounded transition-colors ${isConfirmed ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`} 
-                        title="Modifier"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                      {isConfirmed ? (
+                        <button 
+                          onClick={() => onView(contact)} 
+                          className="flex items-center p-1.5 rounded transition-colors bg-indigo-50 text-indigo-600 hover:bg-indigo-100" 
+                          title="Consulter"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => onEdit(contact)} 
+                          className="flex items-center p-1.5 rounded transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100" 
+                          title="Modifier"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
                       <button 
                         onClick={() => setContactToDelete(contact.id!)} 
                         disabled={isConfirmed}
