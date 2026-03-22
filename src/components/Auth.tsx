@@ -12,7 +12,7 @@ export function Auth() {
       await signInWithPopup(auth, provider);
     } catch (err: any) {
       console.error('Login error:', err);
-      setError('Erreur lors de la connexion. Veuillez réessayer.');
+      setError(`Erreur lors de la connexion: ${err.message || 'Veuillez réessayer.'}`);
     }
   };
 
