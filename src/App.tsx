@@ -3,18 +3,12 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ContactTable } from './components/ContactTable';
 import { ContactForm } from './components/ContactForm';
-import { Auth } from './components/Auth';
 import { Contact, SOURCES, CHANNELS, INTEREST_LEVELS, STATUSES, LEVELS } from './types';
 import { generatePDF } from './utils/pdfGenerator';
-import { Plus, Download, FilterX, LogOut } from 'lucide-react';
-import { auth, db } from './firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, where } from 'firebase/firestore';
+import { Plus, Download, FilterX } from 'lucide-react';
+import * as api from './services/api';
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -35,94 +29,36 @@ export default function App() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setIsAuthReady(true);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!isAuthReady || !user) {
-      setContacts([]);
-      setIsLoading(false);
-      return;
-    }
-
+  const fetchContacts = async () => {
     setIsLoading(true);
-    
     try {
-      let q = query(
-        collection(db, 'contacts'),
-        where('userId', '==', user.uid),
-        orderBy('date', 'desc'),
-        orderBy('createdAt', 'desc')
-      );
+      const filters = {
+        date: filterDate,
+        source: filterSource,
+        channel: filterChannel,
+        interestLevel: filterInterest,
+        status: filterStatus,
+        requestedLevel: filterLevel,
+        search: searchQuery
+      };
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        let fetchedContacts = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Contact[];
-
-        // Apply client-side filters
-        if (filterDate) fetchedContacts = fetchedContacts.filter(c => c.date === filterDate);
-        if (filterSource) fetchedContacts = fetchedContacts.filter(c => c.source === filterSource);
-        if (filterChannel) fetchedContacts = fetchedContacts.filter(c => c.channel === filterChannel);
-        if (filterInterest) fetchedContacts = fetchedContacts.filter(c => c.interestLevel === filterInterest);
-        if (filterStatus) fetchedContacts = fetchedContacts.filter(c => c.status === filterStatus);
-        
-        if (filterLevel) {
-          fetchedContacts = fetchedContacts.filter(c => 
-            c.children.some(child => child.requestedLevel.includes(filterLevel))
-          );
-        }
-        
-        if (searchQuery) {
-          const lowerQuery = searchQuery.toLowerCase();
-          fetchedContacts = fetchedContacts.filter(c => 
-            c.lastName.toLowerCase().includes(lowerQuery) ||
-            (c.fatherPhone && c.fatherPhone.includes(lowerQuery)) ||
-            (c.motherPhone && c.motherPhone.includes(lowerQuery)) ||
-            c.children.some(child => child.firstName.toLowerCase().includes(lowerQuery))
-          );
-        }
-
-        setContacts(fetchedContacts);
-        setIsLoading(false);
-      }, (error) => {
-        console.error('Firestore Error:', error);
-        setIsLoading(false);
-      });
-
-      return () => unsubscribe();
+      const data = await api.fetchContacts(filters);
+      setContacts(data);
     } catch (error) {
-      console.error('Error setting up snapshot:', error);
+      console.error('Failed to fetch contacts:', error);
+    } finally {
       setIsLoading(false);
     }
-  }, [user, isAuthReady, filterDate, filterSource, filterChannel, filterInterest, filterStatus, filterLevel, searchQuery]);
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, [filterDate, filterSource, filterChannel, filterInterest, filterStatus, filterLevel, searchQuery]);
 
   const handleSaveContact = async (contact: Contact, addAnother: boolean) => {
-    if (!user) return;
-    
     try {
-      const contactData = {
-        ...contact,
-        userId: user.uid,
-        updatedAt: serverTimestamp()
-      };
-      
-      delete contactData.id; // Remove ID before saving
-
-      if (contact.id) {
-        await updateDoc(doc(db, 'contacts', contact.id), contactData);
-      } else {
-        await addDoc(collection(db, 'contacts'), {
-          ...contactData,
-          createdAt: serverTimestamp()
-        });
-      }
+      await api.saveContact(contact);
+      fetchContacts();
       
       if (!addAnother) {
         setIsFormOpen(false);
@@ -130,30 +66,25 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to save contact:', error);
-      alert('Erreur lors de l\'enregistrement du contact.');
     }
   };
 
-  const handleDeleteContact = async (id: string) => {
-    if (!user) return;
+  const handleDeleteContact = async (id: number) => {
     try {
-      await deleteDoc(doc(db, 'contacts', id));
+      await api.deleteContact(id);
+      fetchContacts();
     } catch (error) {
       console.error('Failed to delete contact:', error);
-      alert('Erreur lors de la suppression.');
     }
   };
 
   const handleConsolidateContact = async (contact: Contact) => {
-    if (!contact.id || !user) return;
+    if (!contact.id) return;
     try {
-      await updateDoc(doc(db, 'contacts', contact.id), {
-        status: 'confirmé',
-        updatedAt: serverTimestamp()
-      });
+      await api.consolidateContact(contact.id);
+      fetchContacts();
     } catch (error) {
       console.error('Failed to consolidate contact:', error);
-      alert('Erreur lors de la consolidation.');
     }
   };
 
@@ -168,37 +99,14 @@ export default function App() {
   };
 
   const handleReset = async () => {
-    if (!user) return;
-    
     try {
-      // Fetch all contacts for this user to ensure we delete everything, not just filtered ones
-      const { getDocs } = await import('firebase/firestore');
-      const q = query(collection(db, 'contacts'), where('userId', '==', user.uid));
-      const snapshot = await getDocs(q);
-      
-      const deletePromises = snapshot.docs.map(docSnapshot => 
-        deleteDoc(doc(db, 'contacts', docSnapshot.id))
-      );
-      
-      await Promise.all(deletePromises);
+      await api.resetDatabase();
+      setContacts([]);
       setIsResetModalOpen(false);
     } catch (error) {
-      console.error('Failed to reset database:', error);
-      alert('Erreur lors de la réinitialisation.');
+      console.error('Error resetting database:', error);
     }
   };
-
-  if (!isAuthReady) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2C337B]"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Auth />;
-  }
 
   const hasContacts = contacts.length > 0;
   const allConsolidated = hasContacts && contacts.every(c => c.status === 'confirmé');
@@ -212,13 +120,6 @@ export default function App() {
           <p className="text-slate-500 text-sm mt-1">Suivi quotidien des demandes d'inscription</p>
         </div>
         <div className="flex space-x-3 w-full sm:w-auto">
-          <button
-            onClick={() => signOut(auth)}
-            className="flex items-center justify-center px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors shadow-sm font-medium"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Déconnexion
-          </button>
           <button
             onClick={() => setIsPdfModalOpen(true)}
             disabled={!canGeneratePdf}
