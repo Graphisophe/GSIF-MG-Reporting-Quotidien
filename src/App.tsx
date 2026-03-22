@@ -78,16 +78,6 @@ export default function App() {
     }
   };
 
-  const handleConsolidateContact = async (contact: Contact) => {
-    if (!contact.id) return;
-    try {
-      await api.consolidateContact(contact.id);
-      fetchContacts();
-    } catch (error) {
-      console.error('Failed to consolidate contact:', error);
-    }
-  };
-
   const resetFilters = () => {
     setFilterDate('');
     setFilterSource('');
@@ -109,8 +99,7 @@ export default function App() {
   };
 
   const hasContacts = contacts.length > 0;
-  const allConsolidated = hasContacts && contacts.every(c => c.status === 'confirmé');
-  const canGeneratePdf = allConsolidated;
+  const canGeneratePdf = hasContacts;
 
   return (
     <Layout>
@@ -123,7 +112,7 @@ export default function App() {
           <button
             onClick={() => setIsPdfModalOpen(true)}
             disabled={!canGeneratePdf}
-            title={!canGeneratePdf ? "Tous les contacts affichés doivent être consolidés pour générer le PDF" : ""}
+            title={!canGeneratePdf ? "Aucun contact à exporter" : ""}
             className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors shadow-sm font-medium ${canGeneratePdf ? 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50' : 'bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed'}`}
           >
             <Download className="w-4 h-4 mr-2" />
@@ -195,7 +184,6 @@ export default function App() {
           contacts={contacts}
           onEdit={(c) => { setEditingContact(c); setIsFormOpen(true); }}
           onDelete={handleDeleteContact}
-          onConsolidate={handleConsolidateContact}
         />
       )}
 

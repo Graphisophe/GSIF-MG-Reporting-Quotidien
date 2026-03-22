@@ -14,7 +14,7 @@ export interface Contact {
   source: string;
   channel: string;
   interestLevel: string;
-  actionTaken: string;
+  toDo: string;
   appointmentDate: string | null;
   status: string;
   internalNotes?: string;
@@ -50,19 +50,18 @@ export const INTEREST_LEVELS = [
   'inscription probable'
 ];
 
-export const ACTIONS_TAKEN = [
+export const TO_DOS = [
   '___',
-  'renseigné',
-  'rappel prévu',
-  'dossier envoyé',
-  'rendez-vous fixé'
+  'A relancer',
+  'A rencontrer',
+  'A finaliser'
 ];
 
 export const STATUSES = [
   '___',
-  'à relancer',
-  'en attente',
-  'clôturé'
+  'Prospect',
+  'Converti',
+  'Non-converti'
 ];
 
 export const LEVELS = [

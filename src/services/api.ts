@@ -50,7 +50,7 @@ export const fetchContacts = async (filters: any): Promise<Contact[]> => {
     if (a.date !== b.date) {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
-    return (b.id || '').localeCompare(a.id || '');
+    return String(b.id || '').localeCompare(String(a.id || ''));
   });
 
   return contacts;
@@ -61,7 +61,7 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
   const contacts = getStoredContacts();
   
   if (contact.id) {
-    const index = contacts.findIndex(c => c.id === contact.id);
+    const index = contacts.findIndex(c => String(c.id) === String(contact.id));
     if (index !== -1) {
       contacts[index] = { ...contact, updatedAt: new Date().toISOString() };
     }
@@ -84,18 +84,8 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
 export const deleteContact = async (id: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   let contacts = getStoredContacts();
-  contacts = contacts.filter(c => c.id !== id);
+  contacts = contacts.filter(c => String(c.id) !== String(id));
   saveStoredContacts(contacts);
-};
-
-export const consolidateContact = async (id: string): Promise<void> => {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  const contacts = getStoredContacts();
-  const index = contacts.findIndex(c => c.id === id);
-  if (index !== -1) {
-    contacts[index] = { ...contacts[index], status: 'confirmé', updatedAt: new Date().toISOString() };
-    saveStoredContacts(contacts);
-  }
 };
 
 export const resetDatabase = async (): Promise<void> => {

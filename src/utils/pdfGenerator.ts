@@ -38,7 +38,7 @@ export function generatePDF(contacts: Contact[], date: string, sensitivePointsSu
       c.source,
       c.channel,
       c.interestLevel,
-      c.actionTaken,
+      c.toDo,
       c.appointmentDate && !isNaN(new Date(c.appointmentDate).getTime()) ? format(new Date(c.appointmentDate), 'dd/MM HH:mm') : '-',
       c.status
     ];
@@ -46,7 +46,7 @@ export function generatePDF(contacts: Contact[], date: string, sensitivePointsSu
 
   autoTable(doc, {
     startY: 40,
-    head: [['Date', 'Nom parent', 'Téléphones', 'Enfant(s)', 'Niveau(x)', 'Source', 'Echange', "Niveau d'intérêt", 'Action faite', 'RDV prévu', 'Statut']],
+    head: [['Date', 'Nom parent', 'Téléphones', 'Enfant(s)', 'Niveau(x)', 'Source', 'Echange', "Niveau d'intérêt", 'A faire', 'RDV prévu', 'Statut']],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: [44, 51, 123], textColor: 255, fontSize: 9, fontStyle: 'bold' },
@@ -84,9 +84,9 @@ export function generatePDF(contacts: Contact[], date: string, sensitivePointsSu
   const totalRequests = contacts.length;
   const calls = contacts.filter(c => c.channel === 'téléphone').length;
   const messages = contacts.filter(c => c.channel === 'message').length;
-  const appointments = contacts.filter(c => c.actionTaken === 'rendez-vous fixé').length;
+  const appointments = contacts.filter(c => c.toDo === 'A rencontrer').length;
   const visits = contacts.filter(c => c.channel === 'visite directe').length;
-  const advancedFiles = contacts.filter(c => c.actionTaken === 'dossier envoyé' || c.actionTaken === 'rendez-vous fixé').length;
+  const advancedFiles = contacts.filter(c => c.toDo === 'A finaliser').length;
 
   const summaryItems = [
     `Nombre total de demandes : ${totalRequests}`,

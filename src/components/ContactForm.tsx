@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Contact, SOURCES, CHANNELS, INTEREST_LEVELS, ACTIONS_TAKEN, STATUSES, LEVELS } from '../types';
+import { Contact, SOURCES, CHANNELS, INTEREST_LEVELS, TO_DOS, STATUSES, LEVELS } from '../types';
 import { X, Plus, Trash2 } from 'lucide-react';
 
 interface ContactFormProps {
@@ -22,7 +22,7 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
       source: '___',
       channel: '___',
       interestLevel: '___',
-      actionTaken: '___',
+      toDo: '___',
       status: '___',
       appointmentDate: '',
       internalNotes: '',
@@ -35,13 +35,13 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
     name: "children"
   });
 
-  const actionTakenValue = watch('actionTaken');
+  const toDoValue = watch('toDo');
 
   useEffect(() => {
-    if (actionTakenValue !== 'rendez-vous fixé') {
+    if (!['A relancer', 'A rencontrer', 'A finaliser'].includes(toDoValue)) {
       setValue('appointmentDate', '');
     }
-  }, [actionTakenValue, setValue]);
+  }, [toDoValue, setValue]);
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 8);
@@ -221,11 +221,11 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Action faite *</label>
-                  <select {...register('actionTaken', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.actionTaken ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm`}>
-                    {ACTIONS_TAKEN.map(a => <option key={a} value={a}>{a}</option>)}
+                  <label className="block text-sm font-medium text-slate-700 mb-1">A faire *</label>
+                  <select {...register('toDo', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.toDo ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm`}>
+                    {TO_DOS.map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
-                  {errors.actionTaken && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
+                  {errors.toDo && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Statut *</label>
@@ -236,9 +236,9 @@ export function ContactForm({ contact, onSave, onClose }: ContactFormProps) {
                 </div>
               </div>
 
-              {actionTakenValue === 'rendez-vous fixé' && (
+              {['A relancer', 'A rencontrer', 'A finaliser'].includes(toDoValue) && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">RDV prévu *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Date et heure *</label>
                   <input type="datetime-local" {...register('appointmentDate', { required: true })} className={`w-full px-3 py-2 border ${errors.appointmentDate ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow`} />
                   {errors.appointmentDate && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
                 </div>

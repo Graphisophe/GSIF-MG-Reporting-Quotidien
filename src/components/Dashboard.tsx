@@ -9,9 +9,9 @@ export function Dashboard({ contacts }: DashboardProps) {
   const totalRequests = contacts.length;
   const calls = contacts.filter(c => c.channel === 'téléphone').length;
   const messages = contacts.filter(c => c.channel === 'message').length;
-  const appointments = contacts.filter(c => c.actionTaken === 'rendez-vous fixé').length;
+  const appointments = contacts.filter(c => c.toDo === 'A rencontrer').length;
   const visits = contacts.filter(c => c.channel === 'rencontre').length;
-  const advancedFiles = contacts.filter(c => c.actionTaken === 'dossier envoyé' || c.actionTaken === 'rendez-vous fixé').length;
+  const advancedFiles = contacts.filter(c => c.toDo === 'A finaliser').length;
 
   const cards = [
     { title: 'Total demandes', value: totalRequests, icon: Users, color: 'bg-blue-50 text-[#2C337B]', border: 'border-[#2C337B]' },
