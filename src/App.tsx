@@ -69,7 +69,7 @@ export default function App() {
     }
   };
 
-  const handleDeleteContact = async (id: number) => {
+  const handleDeleteContact = async (id: string) => {
     try {
       await api.deleteContact(id);
       fetchContacts();

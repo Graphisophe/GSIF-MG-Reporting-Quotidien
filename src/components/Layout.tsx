@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { motion } from 'motion/react';
+import { BookOpen } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,7 +13,9 @@ export function Layout({ children }: LayoutProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-24 items-center">
             <div className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Logo GSIF" className="h-20 w-auto object-contain bg-white p-1 rounded-md" />
+              <div className="bg-white p-1.5 rounded-md">
+                <BookOpen className="h-6 w-6 text-[#2C337B]" />
+              </div>
               <h1 className="text-xl font-semibold tracking-tight">
                 GSIF Marthe Gautier <span className="text-slate-300 font-normal text-sm ml-2 hidden sm:inline-block">| Suivi des Inscriptions</span>
               </h1>

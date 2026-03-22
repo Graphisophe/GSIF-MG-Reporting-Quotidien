@@ -50,7 +50,7 @@ export const fetchContacts = async (filters: any): Promise<Contact[]> => {
     if (a.date !== b.date) {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
-    return (b.id || 0) - (a.id || 0);
+    return (b.id || '').localeCompare(a.id || '');
   });
 
   return contacts;
@@ -68,7 +68,7 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
   } else {
     const newContact = { 
       ...contact, 
-      id: Date.now(),
+      id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -81,14 +81,14 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
   return contact;
 };
 
-export const deleteContact = async (id: number): Promise<void> => {
+export const deleteContact = async (id: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   let contacts = getStoredContacts();
   contacts = contacts.filter(c => c.id !== id);
   saveStoredContacts(contacts);
 };
 
-export const consolidateContact = async (id: number): Promise<void> => {
+export const consolidateContact = async (id: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   const contacts = getStoredContacts();
   const index = contacts.findIndex(c => c.id === id);
