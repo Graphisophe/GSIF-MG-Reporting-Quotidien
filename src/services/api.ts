@@ -33,15 +33,15 @@ export const fetchContacts = async (filters: any): Promise<Contact[]> => {
     contacts = contacts.filter(c => c.status === filters.status);
   }
   if (filters.requestedLevel) {
-    contacts = contacts.filter(c => c.children.some(child => child.requestedLevel.includes(filters.requestedLevel)));
+    contacts = contacts.filter(c => c.children && c.children.some(child => child.requestedLevel && child.requestedLevel.includes(filters.requestedLevel)));
   }
   if (filters.search) {
     const search = filters.search.toLowerCase();
     contacts = contacts.filter(c => 
-      c.lastName.toLowerCase().includes(search) ||
+      (c.lastName && c.lastName.toLowerCase().includes(search)) ||
       (c.fatherPhone && c.fatherPhone.includes(search)) ||
       (c.motherPhone && c.motherPhone.includes(search)) ||
-      c.children.some(child => child.firstName.toLowerCase().includes(search))
+      (c.children && c.children.some(child => child.firstName && child.firstName.toLowerCase().includes(search)))
     );
   }
 
@@ -68,7 +68,7 @@ export const saveContact = async (contact: Contact): Promise<Contact> => {
   } else {
     const newContact = { 
       ...contact, 
-      id: Date.now().toString(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

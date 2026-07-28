@@ -46,7 +46,7 @@ export function generatePDF(contacts: Contact[], date: string, sensitivePointsSu
 
   autoTable(doc, {
     startY: 40,
-    head: [['Date', 'Nom parent', 'Téléphones', 'Enfant(s)', 'Niveau(x)', 'Source', 'Echange', "Niveau d'intérêt", 'A faire', 'RDV prévu', 'Statut']],
+    head: [['Date', 'Contact', 'Téléphones', 'Enfant(s)', 'Niveau(x)', 'Source', 'Echange', "Niveau d'intérêt", 'A faire', 'RDV prévu', 'Statut']],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: [44, 51, 123], textColor: 255, fontSize: 9, fontStyle: 'bold' },

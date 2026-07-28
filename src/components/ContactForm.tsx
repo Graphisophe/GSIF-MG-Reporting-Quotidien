@@ -99,12 +99,14 @@ export function ContactForm({ contact, isViewOnly, onSave, onClose }: ContactFor
               
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Date du contact *</label>
-                <input type="date" disabled={isViewOnly} {...register('date', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" />
+                <input type="date" disabled={isViewOnly} {...register('date', { required: true })} className={`w-full px-3 py-2 border ${errors.date ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500`} />
+                {errors.date && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nom de famille *</label>
-                <input type="text" disabled={isViewOnly} {...register('lastName', { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Ex: Dupont" />
+                <label className="block text-sm font-medium text-slate-700 mb-1">Contact *</label>
+                <input type="text" disabled={isViewOnly} {...register('lastName', { required: true })} className={`w-full px-3 py-2 border ${errors.lastName ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500`} placeholder="Nom du contact" />
+                {errors.lastName && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
               </div>
 
               <div>
@@ -178,17 +180,17 @@ export function ContactForm({ contact, isViewOnly, onSave, onClose }: ContactFor
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Prénom de l'enfant *</label>
-                        <input type="text" disabled={isViewOnly} {...register(`children.${index}.firstName` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Ex: Léo" />
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Prénom de l'enfant</label>
+                        <input type="text" disabled={isViewOnly} {...register(`children.${index}.firstName` as const)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" placeholder="Ex: Léo" />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Date de naissance *</label>
-                        <input type="date" disabled={isViewOnly} {...register(`children.${index}.birthDate` as const, { required: true })} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" />
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Date de naissance</label>
+                        <input type="date" disabled={isViewOnly} {...register(`children.${index}.birthDate` as const)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow disabled:bg-slate-50 disabled:text-slate-500" />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Niveau demandé *</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Niveau demandé</label>
                         <select disabled={isViewOnly} {...register(`children.${index}.requestedLevel` as const)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white disabled:bg-slate-50 disabled:text-slate-500">
                           {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                         </select>
@@ -209,6 +211,7 @@ export function ContactForm({ contact, isViewOnly, onSave, onClose }: ContactFor
                   <select disabled={isViewOnly} {...register('source', { validate: v => v !== '___' })} className={`w-full px-3 py-2 border ${errors.source ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-[#2C337B] focus:border-[#2C337B] outline-none transition-shadow bg-white text-sm disabled:bg-slate-50 disabled:text-slate-500`}>
                     {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
+                  {errors.source && <span className="text-xs text-red-500 mt-1">Ce champ est requis</span>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Echange</label>
